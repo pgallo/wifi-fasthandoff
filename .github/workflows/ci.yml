@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: C tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Benchmark (baseline vs adapted)
+        run: ./build/fhsim --runs 20 --check
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install content layer
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Python tests
+        run: pytest -v
+
+      - name: Content continuity demo
+        run: |
+          mkdir -p traces
+          ./build/fhsim --runs 5 --scenario campus-vehicle --trace-dir traces
+          python -m fhcontent.compare --traces traces

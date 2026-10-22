@@ -1,0 +1,15 @@
+# C build output
+build/
+cmake-build-*/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# generated traces and results
+traces/
+*.result.json
